@@ -16,20 +16,19 @@
 
 ## USAGE
 ## * To Backup:
-## ** example: ./couchdb-dump.sh -b -H 127.0.0.1 -d mydb -u admin -p password -f mydb.json
+## ** example: ./couchdb-backup.sh -b -H 127.0.0.1 -d mydb -u admin -p password -f mydb.json
 ## * To Restore:
-## ** example: ./couchdb-dump.sh -r -H 127.0.0.1 -d mydb -u admin -p password -f mydb.json
+## ** example: ./couchdb-backup.sh -r -H 127.0.0.1 -d mydb -u admin -p password -f mydb.json
 
 
 ###################### CODE STARTS HERE ###################
-scriptversionnumber="1.1.9"
+scriptversionnumber="1.1.9-dump"
 
 ##START: FUNCTIONS
 usage(){
     echo
     echo "Usage: $0 [-b|-r] -H <COUCHDB_HOST> -d <DB_NAME> -f <BACKUP_FILE> [-u <username>] [-p <password>] [-P <port>] [-l <lines>] [-t <threads>] [-a <import_attempts>]"
     echo -e "\t-b   Run script in BACKUP mode."
-    echo -e "\t-r   Run script in RESTORE mode."
     echo -e "\t-H   CouchDB Hostname or IP. Can be provided with or without 'http(s)://'"
     echo -e "\t-d   CouchDB Database name to backup/restore."
     echo -e "\t-f   File to Backup-to/Restore-from."
@@ -119,7 +118,6 @@ while getopts ":h?H:d:f:u:p:P:l:t:a:c?q?z?T?V?b?B?r?R?" opt; do
     case "$opt" in
         h) usage;;
         b|B) backup=true ;;
-        r|R) restore=true ;;
         H) url="$OPTARG" ;;
         d) db_name="$OPTARG" ;;
         f) file_name="$OPTARG" ;;
@@ -161,7 +159,7 @@ if [ $backup = true ]&&[ $restore = true ]; then
     echo "... ERROR: Cannot pass both '-b' and '-r'"
     usage
 elif [ $backup = false ]&&[ $restore = false ]; then
-    echo "... ERROR: Missing argument '-b' (Backup), or '-r' (Restore)"
+    echo "... ERROR: Missing argument '-b' (Backup)"
     usage
 fi
 # Handle empty args
@@ -192,7 +190,7 @@ else
     sed_cmd="sed";
 fi
 ## Make sure it's installed
-echo | $sed_cmd 's/a//' >/dev/null 2>&1 
+echo | $sed_cmd 's/a//' >/dev/null 2>&1
 if [ ! $? = 0 ]; then
     echo "... ERROR: please install $sed_cmd (gnu-sed) and ensure it is in your path"
     exit 1
@@ -244,7 +242,7 @@ fi
 if [ ! "`echo $url | egrep -c ":[0-9]*$"`" = "1" ]; then
     # add it.
     url="$url:$port"
-fi	
+fi
 
 # Check for empty user/pass and try reading in from Envvars
 if [ "x$username" = "x" ]; then
@@ -446,15 +444,23 @@ if [ $backup = true ]&&[ $restore = false ]; then
         echo "Stage failed."
         exit 1
     fi
-    $echoVerbose && echo "... INFO: Stage 3 - Header Correction"
+    $echoVerbose && echo "... INFO: Stage 3 - Insert opening ["
     filesize=$(du -P -k ${file_name} | awk '{print$1}')
     checkdiskspace "${file_name}" $filesize
-    $sed_cmd ${sed_edit_in_place} '1s/^.*/{"new_edits":false,"docs":[/' ${file_name} && rm -f ${file_name}.sedtmp
+    $sed_cmd ${sed_edit_in_place} '1s/^.*/[/' ${file_name} && rm -f ${file_name}.sedtmp
     if [ ! $? = 0 ];then
         echo "Stage failed."
         exit 1
     fi
-    $echoVerbose && echo "... INFO: Stage 4 - Final document line correction"
+    $echoVerbose && echo "... INFO: Stage 4.1 - Final ]"
+    filesize=$(du -P -k ${file_name} | awk '{print$1}')
+    checkdiskspace "${file_name}" $filesize
+    $sed_cmd ${sed_edit_in_place} 's/]}$/]/g' ${file_name} && rm -f ${file_name}.sedtmp
+    if [ ! $? = 0 ];then
+        echo "Stage failed."
+        exit 1
+    fi
+    $echoVerbose && echo "... INFO: Stage 4.2 - Final document line correction"
     filesize=$(du -P -k ${file_name} | awk '{print$1}')
     checkdiskspace "${file_name}" $filesize
     $sed_cmd ${sed_edit_in_place} 's/}}$/}/g' ${file_name} && rm -f ${file_name}.sedtmp
@@ -462,6 +468,7 @@ if [ $backup = true ]&&[ $restore = false ]; then
         echo "Stage failed."
         exit 1
     fi
+
 
     # If -z (compress) option then compress output file
     if [ "$compress" = true ]; then
@@ -565,7 +572,7 @@ elif [ $restore = true ]&&[ $backup = false ]; then
     # Count the design file (if it even exists)
     DESIGNS="`wc -l ${design_file_name} 2>/dev/null | awk '{print$1}'`"
     # If there's no design docs for import...
-    if [ "x$DESIGNS" = "x" ]||[ "$DESIGNS" = "0" ]; then 
+    if [ "x$DESIGNS" = "x" ]||[ "$DESIGNS" = "0" ]; then
         # Cleanup any null files
         rm -f ${design_file_name} 2>/dev/null
         $echoVerbose && echo "... INFO: No Design Documents found for import."
