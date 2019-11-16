@@ -15,16 +15,7 @@ The script has been modified, where Backup will create a plain array of objects 
 
 Do NOT attempt to restore using this file, it doesn't contain the metadata expected to restore.
 
-# See original fork https://github.com/danielebailo/couchdb-dump for full backup/ restore functionality and full docs.
-
-============
-
-It works on LINUX/UNIX, Bash based systems (MacOSx) + Git Bash (Windows)
-
-**Bash command line script to EASILY Backup & Restore a CouchDB database**
-
- * Needs bash (plus curl, tr, file, split, awk, sed)
- * Dumped database is output to a file (configurable).
+## See original fork https://github.com/danielebailo/couchdb-dump for full backup/ restore functionality and full docs.
 
 ## Quickstart (& quickend)
 * Dump:
@@ -34,7 +25,7 @@ It works on LINUX/UNIX, Bash based systems (MacOSx) + Git Bash (Windows)
 ## Usage
 ```
 Usage: ./couchdb-dump.sh [-b] -H <COUCHDB_HOST> -d <DB_NAME> -f <BACKUP_FILE> [-u <username>] [-p <password>] [-P <port>] [-l <lines>] [-t <threads>] [-a <import_attempts>]
-	-b   Run script in BACKUP mode.
+	-b   Run script in BACKUP (dump) mode.
 	-H   CouchDB Hostname or IP. Can be provided with or without 'http(s)://'
 	-d   CouchDB Database name to dump.
 	-f   File to Dump-to.
