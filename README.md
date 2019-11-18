@@ -20,7 +20,7 @@ Do NOT attempt to restore using this file, it doesn't contain the metadata expec
 ## Quickstart (& quickend)
 * Dump:
 
-```bash couchdb-dump.sh -b -H 127.0.0.1 -d my-db -f dumpedDB.json -u admin -p password```
+```./couchdb-dump.sh -b -H 127.0.0.1 -d my-db -f dumpedDB.json -u admin -p password```
 
 ## Usage
 ```
