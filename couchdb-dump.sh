@@ -40,6 +40,8 @@ usage(){
     echo -e "\t-l   Number of lines (documents) to Restore at a time. [Default: 5000] (Restore Only)"
     echo -e "\t-t   Number of CPU threads to use when parsing data [Default: nProcs-1] (Backup Only)"
     echo -e "\t-a   Number of times to Attempt import before failing [Default: 3] (Restore Only)"
+    echo -e "\t-r   Dump records only, no metadata (Backup Only)"
+    echo -e "\t-v   Dump views only (Backup Only)"
     echo -e "\t-c   Create DB on demand, if they are not listed."
     echo -e "\t-q   Run in quiet mode. Suppress output, except for errors and warnings."
     echo -e "\t-z   Compress output file (Backup Only)"
@@ -104,6 +106,8 @@ fi
 username=""
 password=""
 backup=false
+recordsOnly=false
+viewsOnly=false
 restore=false
 port=5984
 OPTIND=1
@@ -114,7 +118,7 @@ verboseMode=true
 compress=false
 timestamp=false
 
-while getopts ":h?H:d:f:u:p:P:l:t:a:c?q?z?T?V?b?B?r?R?" opt; do
+while getopts ":h?H:d:f:u:p:P:l:t:a:o?v?c?q?z?T?V?b?B?r?R?" opt; do
     case "$opt" in
         h) usage;;
         b|B) backup=true ;;
@@ -127,6 +131,8 @@ while getopts ":h?H:d:f:u:p:P:l:t:a:c?q?z?T?V?b?B?r?R?" opt; do
         l) lines="${OPTARG}" ;;
         t) threads="${OPTARG}" ;;
         a) attempts="${OPTARG}";;
+        o) recordsOnly=true ;;
+        v) viewsOnly=true ;;
         c) createDBsOnDemand=true;;
         q) verboseMode=false;;
         z) compress=true;;
@@ -319,7 +325,12 @@ if [ $backup = true ]&&[ $restore = false ]; then
     fi
 
     # Grab our data from couchdb
-    curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name/_all_docs?include_docs=true&attachments=true" -o ${file_name}
+    if [ "$viewsOnly" = true ]; then
+        curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name/_all_docs?startkey=%22_design/%22&endkey=%22_design0%22&include_docs=true" -o ${file_name}
+    else
+        curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name/_all_docs?include_docs=true&attachments=true" -o ${file_name}
+    fi
+
     # Check for curl errors
     if [ ! $? = 0 ]; then
         echo "... ERROR: Curl encountered an issue whilst dumping the database."
