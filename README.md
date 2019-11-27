@@ -33,6 +33,9 @@ Restoring via Windows (design docs at least) is still a manual process, as runni
 ./couchdb-dump.sh: line 815: /dev/fd/62: No such file or directory
 (error is from the line while IFS="" read -r; do)
 
+### Why do you need it?
+We use this fork to dump couchdb for reading by Apache Drill, and to backup views.
+
 ## See original fork https://github.com/danielebailo/couchdb-dump for full backup/ restore functionality and full docs.
 ## Original README:
 ## Quickstart (& quickend)
@@ -63,5 +66,3 @@ Usage: ./couchdb-dump.sh [-b] -H <COUCHDB_HOST> -d <DB_NAME> -f <BACKUP_FILE> [-
 Example: ./couchdb-dump.sh -b -H 127.0.0.1 -d mydb -f dumpedDB.json -u admin -p password
 ```
 
-## Why do you need it?
-We use this fork to dump couchdb for reading by Apache Drill.
