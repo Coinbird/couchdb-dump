@@ -27,6 +27,12 @@ Another addition is to add the `-v` flag, which will dump the views (docs under 
 ```
 ```
 
+### Restoring seems to be broken on Windows
+Restoring via Windows (design docs at least) is still a manual process, as running this in git bash (with the restore flag -r) ends in this error:
+
+./couchdb-dump.sh: line 815: /dev/fd/62: No such file or directory
+(error is from the line while IFS="" read -r; do)
+
 ## See original fork https://github.com/danielebailo/couchdb-dump for full backup/ restore functionality and full docs.
 ## Original README:
 ## Quickstart (& quickend)
