@@ -19,7 +19,7 @@ Results in this file format:
 
 Do NOT attempt to restore using this file, it doesn't contain the metadata expected to restore.
 
-Another addition is to add the `-v` flag, which will dump the views (docs under _design)
+Another addition is to add the `-v` flag, which will dump the *only* views (docs under _design)
 ```
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -v -f my-database-views-only.json
 ```
