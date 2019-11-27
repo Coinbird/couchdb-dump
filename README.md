@@ -1,4 +1,4 @@
-Couchdb-dump to plain array
+Couchdb-dump with -o (dump to array) and -v (dump design docs only) flags 
 ============
 
 ## Modification info for this fork
