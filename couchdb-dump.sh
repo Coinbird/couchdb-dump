@@ -29,6 +29,7 @@ usage(){
     echo
     echo "Usage: $0 [-b|-r] -H <COUCHDB_HOST> -d <DB_NAME> -f <BACKUP_FILE> [-u <username>] [-p <password>] [-P <port>] [-l <lines>] [-t <threads>] [-a <import_attempts>]"
     echo -e "\t-b   Run script in BACKUP mode."
+    echo -e "\t-r   Run script in RESTORE mode."
     echo -e "\t-H   CouchDB Hostname or IP. Can be provided with or without 'http(s)://'"
     echo -e "\t-d   CouchDB Database name to backup/restore."
     echo -e "\t-f   File to Backup-to/Restore-from."
@@ -41,7 +42,7 @@ usage(){
     echo -e "\t-t   Number of CPU threads to use when parsing data [Default: nProcs-1] (Backup Only)"
     echo -e "\t-a   Number of times to Attempt import before failing [Default: 3] (Restore Only)"
     echo -e "\t-r   Dump records only, no metadata (Backup Only)"
-    echo -e "\t-v   Dump views only (Backup Only)"
+    echo -e "\t-v   Dump views/ _design docs only(Backup Only)"
     echo -e "\t-c   Create DB on demand, if they are not listed."
     echo -e "\t-q   Run in quiet mode. Suppress output, except for errors and warnings."
     echo -e "\t-z   Compress output file (Backup Only)"
@@ -122,6 +123,7 @@ while getopts ":h?H:d:f:u:p:P:l:t:a:o?v?c?q?z?T?V?b?B?r?R?" opt; do
     case "$opt" in
         h) usage;;
         b|B) backup=true ;;
+        r|R) restore=true ;;
         H) url="$OPTARG" ;;
         d) db_name="$OPTARG" ;;
         f) file_name="$OPTARG" ;;
@@ -165,7 +167,7 @@ if [ $backup = true ]&&[ $restore = true ]; then
     echo "... ERROR: Cannot pass both '-b' and '-r'"
     usage
 elif [ $backup = false ]&&[ $restore = false ]; then
-    echo "... ERROR: Missing argument '-b' (Backup)"
+    echo "... ERROR: Missing argument '-b' (Backup), or '-r' (Restore)"
     usage
 fi
 # Handle empty args
@@ -326,6 +328,7 @@ if [ $backup = true ]&&[ $restore = false ]; then
 
     # Grab our data from couchdb
     if [ "$viewsOnly" = true ]; then
+        $echoVerbose && echo "... INFO: Outputting design docs/ views only."
         curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name/_all_docs?startkey=%22_design/%22&endkey=%22_design0%22&include_docs=true" -o ${file_name}
     else
         curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name/_all_docs?include_docs=true&attachments=true" -o ${file_name}
@@ -455,23 +458,33 @@ if [ $backup = true ]&&[ $restore = false ]; then
         echo "Stage failed."
         exit 1
     fi
-    $echoVerbose && echo "... INFO: Stage 3 - Insert opening ["
+    $echoVerbose && echo "... INFO: Stage 3 - Header Correction"
     filesize=$(du -P -k ${file_name} | awk '{print$1}')
     checkdiskspace "${file_name}" $filesize
-    $sed_cmd ${sed_edit_in_place} '1s/^.*/[/' ${file_name} && rm -f ${file_name}.sedtmp
+
+
+    if [ "$recordsOnly" = true ]; then
+        $echoVerbose && $recordsOnly && echo "... INFO: Insert opening ["
+        $sed_cmd ${sed_edit_in_place} '1s/^.*/[/' ${file_name} && rm -f ${file_name}.sedtmp
+    else
+        $sed_cmd ${sed_edit_in_place} '1s/^.*/{"new_edits":false,"docs":[/' ${file_name} && rm -f ${file_name}.sedtmp
+    fi
     if [ ! $? = 0 ];then
         echo "Stage failed."
         exit 1
     fi
-    $echoVerbose && echo "... INFO: Stage 4.1 - Final ]"
-    filesize=$(du -P -k ${file_name} | awk '{print$1}')
-    checkdiskspace "${file_name}" $filesize
-    $sed_cmd ${sed_edit_in_place} 's/]}$/]/g' ${file_name} && rm -f ${file_name}.sedtmp
-    if [ ! $? = 0 ];then
-        echo "Stage failed."
-        exit 1
+
+    if [ "$recordsOnly" = true ]; then
+        $echoVerbose && echo "... INFO: Stage 3.5 - Final ]"
+        filesize=$(du -P -k ${file_name} | awk '{print$1}')
+        checkdiskspace "${file_name}" $filesize
+        $sed_cmd ${sed_edit_in_place} 's/]}$/]/g' ${file_name} && rm -f ${file_name}.sedtmp
+        if [ ! $? = 0 ];then
+            echo "Stage failed."
+            exit 1
+        fi
     fi
-    $echoVerbose && echo "... INFO: Stage 4.2 - Final document line correction"
+    $echoVerbose && echo "... INFO: Stage 4 - Final document line correction"
     filesize=$(du -P -k ${file_name} | awk '{print$1}')
     checkdiskspace "${file_name}" $filesize
     $sed_cmd ${sed_edit_in_place} 's/}}$/}/g' ${file_name} && rm -f ${file_name}.sedtmp
