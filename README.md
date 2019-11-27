@@ -1,4 +1,4 @@
-Couchdb-dump with -o (dump to array) and -v (dump design docs only) flags 
+Couchdb-dump with -o (dump to array), -v (dump design docs only), -k (allow custom view dumping) flags 
 ============
 
 ## Modification info for this fork
@@ -24,7 +24,13 @@ Another addition is to add the `-v` flag, which will dump the *only* views (docs
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -v -f my-database-views-only.json
 ```
 
+Also available is the `-k` flag which allows you to override the automatic addition of `_all_docs?include_docs=true`.
+In your query, be sure to add include_docs=true (or not)
+
 ```
+ ./couchdb-dump.sh -b -H https://our-fancy-server:6984 -k -d "a-cool-database/_design/MainDocs/_view/some-partition-view-of-data-flat
+-?include_docs=true" -o -f sweet_view_data.json -u youruser -p yourpw
+
 ```
 
 ### Restoring design docs seems to be broken (on Windows at least)
