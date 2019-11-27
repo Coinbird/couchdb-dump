@@ -43,6 +43,7 @@ usage(){
     echo -e "\t-a   Number of times to Attempt import before failing [Default: 3] (Restore Only)"
     echo -e "\t-r   Dump records only, no metadata (Backup Only)"
     echo -e "\t-v   Dump views/ _design docs only(Backup Only)"
+    echo -e "\t-k   Allow custom view as db name/ don't get _all_docs (Backup Only)"
     echo -e "\t-c   Create DB on demand, if they are not listed."
     echo -e "\t-q   Run in quiet mode. Suppress output, except for errors and warnings."
     echo -e "\t-z   Compress output file (Backup Only)"
@@ -51,6 +52,7 @@ usage(){
     echo -e "\t-h   Display usage information."
     echo
     echo "Example: $0 -b -H 127.0.0.1 -d mydb -f dumpedDB.json -u admin -p password"
+    echo "Example: $0 -b -H 127.0.0.1 -d "mydb/_all_docs?limit=5&include_docs=true" -k -f dumpedDB.json -u admin -p password"
     echo
     exit 1
 }
@@ -109,6 +111,7 @@ password=""
 backup=false
 recordsOnly=false
 viewsOnly=false
+customOnly=false
 restore=false
 port=5984
 OPTIND=1
@@ -119,7 +122,7 @@ verboseMode=true
 compress=false
 timestamp=false
 
-while getopts ":h?H:d:f:u:p:P:l:t:a:o?v?c?q?z?T?V?b?B?r?R?" opt; do
+while getopts ":h?H:d:f:u:p:P:l:t:a:o?v?k?c?q?z?T?V?b?B?r?R?" opt; do
     case "$opt" in
         h) usage;;
         b|B) backup=true ;;
@@ -135,6 +138,7 @@ while getopts ":h?H:d:f:u:p:P:l:t:a:o?v?c?q?z?T?V?b?B?r?R?" opt; do
         a) attempts="${OPTARG}";;
         o) recordsOnly=true ;;
         v) viewsOnly=true ;;
+        k) customOnly=true ;;
         c) createDBsOnDemand=true;;
         q) verboseMode=false;;
         z) compress=true;;
@@ -327,7 +331,10 @@ if [ $backup = true ]&&[ $restore = false ]; then
     fi
 
     # Grab our data from couchdb
-    if [ "$viewsOnly" = true ]; then
+    if [ "$customOnly" = true ]; then
+        $echoVerbose && echo "... INFO: Custom query (reminder set: include_docs=true)"
+        curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name" -o ${file_name}
+    elif [ "$viewsOnly" = true ]; then
         $echoVerbose && echo "... INFO: Outputting design docs/ views only."
         curl ${curlSilentOpt} ${curlopt} -X GET "$url/$db_name/_all_docs?startkey=%22_design/%22&endkey=%22_design0%22&include_docs=true" -o ${file_name}
     else
