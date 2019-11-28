@@ -7,7 +7,7 @@ The script has been modified to add the `-o` flag, where Backup will create a pl
 ```
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -v -f design-docs-only.json
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -o -f my-database-plain.json
-./couchdb-dump.sh -b -H http://localhost:5984 -d "mydb/_all_docs?limit=5&include_docs=true" -k -o -f my-database-plain.json
+./couchdb-dump.sh -b -H http://localhost:5984 -d "mydb/_design/MyDocs/_view/some-crazy-view?include_docs=true&limit=100" -k -o -f my-database-plain.json
 
 ```
 Results in this file format:
