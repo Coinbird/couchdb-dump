@@ -5,7 +5,10 @@ Couchdb-dump with -o (dump to array), -v (dump design docs only), -k (allow cust
 
 The script has been modified to add the `-o` flag, where Backup will create a plain array of objects from the CouchDB, suitable for viewing with Apache Drill.
 ```
+./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -v -f design-docs-only.json
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -o -f my-database-plain.json
+./couchdb-dump.sh -b -H http://localhost:5984 -d "mydb/_all_docs?limit=5&include_docs=true" -k -o -f my-database-plain.json
+
 ```
 Results in this file format:
 
