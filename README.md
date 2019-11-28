@@ -5,7 +5,6 @@ Couchdb-dump with -o (dump to array), -v (dump design docs only), -k (allow cust
 
 The script has been modified to add the `-o` flag, where Backup will create a plain array of objects from the CouchDB, suitable for viewing with Apache Drill.
 ```
-./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -v -f design-docs-only.json
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -o -f my-database-plain.json
 ./couchdb-dump.sh -b -H http://localhost:5984 -d "mydb/_design/MyDocs/_view/some-crazy-view?include_docs=true&limit=100" -k -o -f my-database-plain.json
 
@@ -28,7 +27,7 @@ Another addition is to add the `-v` flag, which will dump the *only* views (docs
 ```
 
 Also available is the `-k` flag which allows you to override the automatic addition of `_all_docs?include_docs=true`.
-In your query, be sure to add include_docs=true (or not)
+In your query, be sure to add include_docs=true (or not). This is probably not suitable for Restore, but is useful for tools like Apache Drill.
 
 ```
  ./couchdb-dump.sh -b -H https://our-fancy-server:6984 -k -d "a-cool-database/_design/MainDocs/_view/some-partition-view-of-data-flat
