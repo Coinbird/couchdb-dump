@@ -3,12 +3,11 @@
  * -o dump to array format (useful for Apache Drill)
  * -v dump design docs only
  * -k Allow explicit query (e.g. views) dumping
- 
-============
 
 ## Modification info for this fork
 
-The script has been modified to add the `-o` flag, where Backup will create a plain array of objects from the CouchDB, suitable for viewing with Apache Drill.
+The script has been modified to add several new flags.
+With the `-o` flag, the script will create a plain array of objects from the CouchDB, suitable for viewing with Apache Drill.
 ```
 ./couchdb-dump.sh -b -H http://localhost:5984 -d my-database -o -f my-database-plain.json
 ./couchdb-dump.sh -b -H http://localhost:5984 -d "mydb/_design/MyDocs/_view/some-crazy-view?include_docs=true&limit=100" -k -o -f my-database-plain.json
