@@ -1,4 +1,9 @@
-Couchdb-dump with -o (dump to array), -v (dump design docs only), -k (allow custom view dumping) flags 
+# Couchdb-dump with Additional Features
+## New Flags:
+ * -o dump to array format (useful for Apache Drill)
+ * -v dump design docs only
+ * -k Allow explicit query (e.g. views) dumping
+ 
 ============
 
 ## Modification info for this fork
