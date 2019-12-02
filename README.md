@@ -30,8 +30,8 @@ Also available is the `-k` flag which allows you to override the automatic addit
 In your query, be sure to add include_docs=true (or not). This is probably not suitable for Restore, but is useful for tools like Apache Drill.
 
 ```
- ./couchdb-dump.sh -b -H https://our-fancy-server:6984 -k -d "a-cool-database/_design/MainDocs/_view/some-partition-view-of-data-flat
--?include_docs=true" -o -f sweet_view_data.json -u youruser -p yourpw
+ ./couchdb-dump.sh -b -H https://our-fancy-server:6984 -k -d "a-cool-database/_design/MainDocs/_view/some-partitioned-view
+?include_docs=true" -o -f sweet_view_data.json -u youruser -p yourpw
 
 ```
 
