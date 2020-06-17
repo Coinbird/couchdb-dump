@@ -1,6 +1,6 @@
 # Couchdb-dump with Additional Features
 ## New Flags:
- * -o dump to array format (useful for Apache Drill)
+ * -o dump to array format (useful for Apache Drill or direct import into MongoDB)
  * -v dump design docs only
  * -k Allow explicit query (e.g. views) dumping
 
